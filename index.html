@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AWS Cloud Practitioner – Mock Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F4F6FA; --surface: #FFFFFF; --surface2: #F0F3F9;
+    --border: #DDE2EF; --text: #1A1F36; --text2: #5A6178;
+    --accent: #1A56DB; --accent-bg: #EBF1FF; --accent-border: #A4BCFF;
+    --success: #0B7B42; --success-bg: #E7F7EE;
+    --danger: #C0392B; --danger-bg: #FDECEA;
+    --warning: #B45309; --warning-bg: #FEF3C7;
+    --radius: 10px; --shadow: 0 1px 4px rgba(26,31,54,0.08);
+  }
+  body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; line-height: 1.6; }
+
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 32px; height: 32px; background: #FF9900; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+  .logo-icon svg { width: 18px; height: 18px; fill: #fff; }
+  .logo-text { font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.01em; }
+  .logo-text span { color: var(--text2); font-weight: 400; }
+
+  #timer-display { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 500; color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: 8px; padding: 6px 16px; min-width: 90px; text-align: center; transition: color 0.3s, background 0.3s, border-color 0.3s; }
+  #timer-display.warn { color: var(--warning); background: var(--warning-bg); border-color: #FCD34D; }
+  #timer-display.crit { color: var(--danger); background: var(--danger-bg); border-color: #FCA5A5; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+  .progress-info { font-size: 13px; color: var(--text2); }
+
+  .container { max-width: 820px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* SPLASH */
+  #splash-screen { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2.5rem 2rem; box-shadow: var(--shadow); }
+  .splash-header { display: flex; align-items: center; gap: 14px; margin-bottom: 1.5rem; }
+  .splash-icon { width: 52px; height: 52px; background: #FF9900; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .splash-icon svg { width: 28px; height: 28px; fill: #fff; }
+  .splash-title { font-size: 22px; font-weight: 600; }
+  .splash-sub { font-size: 14px; color: var(--text2); margin-top: 4px; }
+  .splash-info { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 2rem; }
+  @media (max-width: 500px) { .splash-info { grid-template-columns: 1fr 1fr; } }
+
+  /* NAME FORM */
+  .name-section { margin-bottom: 1.5rem; }
+  .name-section label { display: block; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; letter-spacing: 0.02em; }
+  .name-input-wrap { display: flex; gap: 10px; }
+  .name-input-wrap input { flex: 1; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-family: 'IBM Plex Sans', sans-serif; font-size: 15px; color: var(--text); background: var(--surface); outline: none; transition: border-color 0.15s; }
+  .name-input-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+  .name-input-wrap input.error { border-color: var(--danger); }
+  .name-error { font-size: 12px; color: var(--danger); margin-top: 5px; display: none; }
+  .name-error.show { display: block; }
+
+  .splash-meta { font-size: 13px; color: var(--text2); margin-bottom: 1.5rem; line-height: 1.7; }
+
+  /* STAT CARDS */
+  .stat-card { background: var(--surface2); border-radius: 10px; padding: 1.25rem 1rem; text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 600; color: var(--text); line-height: 1; margin-bottom: 4px; }
+  .stat-label { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* PROGRESS */
+  .progress-bar-wrap { background: var(--border); border-radius: 4px; height: 4px; margin-bottom: 1.5rem; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s ease; }
+
+  /* QUESTION MAP */
+  .question-map-toggle { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1.5rem; }
+  .qm-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--text2); }
+  .qm-header:hover { background: var(--surface2); }
+  .qm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(36px, 1fr)); gap: 6px; padding: 12px 16px; border-top: 1px solid var(--border); }
+  .qm-dot { width: 36px; height: 36px; border-radius: 6px; border: 1.5px solid var(--border); background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--text2); cursor: pointer; transition: all 0.12s; }
+  .qm-dot:hover { border-color: var(--accent); color: var(--accent); }
+  .qm-dot.answered { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+  .qm-dot.current { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .qm-dot.correct-dot { background: var(--success-bg); border-color: var(--success); color: var(--success); }
+  .qm-dot.incorrect-dot { background: var(--danger-bg); border-color: var(--danger); color: var(--danger); }
+  .qm-hidden { display: none; }
+
+  /* QUESTION CARD */
+  .question-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow); margin-bottom: 1.5rem; }
+  .q-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .q-number { font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: 20px; padding: 3px 12px; }
+  .q-badge { font-size: 12px; color: var(--text2); background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; }
+  .q-text { font-size: 17px; font-weight: 500; line-height: 1.55; color: var(--text); margin-bottom: 1.5rem; }
+
+  /* OPTIONS */
+  .options-list { display: flex; flex-direction: column; gap: 10px; }
+  .option-label { display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: var(--radius); cursor: pointer; transition: border-color 0.15s, background 0.15s; user-select: none; background: var(--surface); }
+  .option-label:hover { border-color: var(--accent); background: var(--accent-bg); }
+  .option-label input[type="radio"], .option-label input[type="checkbox"] { margin-top: 2px; accent-color: var(--accent); width: 17px; height: 17px; flex-shrink: 0; cursor: pointer; }
+  .option-label.selected { border-color: var(--accent); background: var(--accent-bg); }
+  .option-label.correct { border-color: var(--success); background: var(--success-bg); }
+  .option-label.incorrect { border-color: var(--danger); background: var(--danger-bg); }
+  .option-label.missed { border-color: var(--success); background: var(--success-bg); opacity: 0.7; }
+  .option-indicator { font-size: 12px; font-weight: 600; margin-left: auto; padding-left: 12px; flex-shrink: 0; align-self: center; }
+  .correct .option-indicator { color: var(--success); }
+  .incorrect .option-indicator { color: var(--danger); }
+  .missed .option-indicator { color: var(--success); }
+  .option-text { font-size: 14.5px; line-height: 1.55; }
+
+  /* FEEDBACK */
+  .feedback-box { display: none; padding: 12px 16px; border-radius: 8px; font-size: 13.5px; margin-top: 1rem; font-weight: 500; }
+  .feedback-box.show { display: block; }
+  .feedback-box.ok { background: var(--success-bg); color: var(--success); border: 1px solid #86EFAC; }
+  .feedback-box.ko { background: var(--danger-bg); color: var(--danger); border: 1px solid #FCA5A5; }
+
+  /* NAVIGATION */
+  .nav-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 1.5rem; }
+
+  /* BUTTONS */
+  .btn { font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; font-weight: 500; padding: 10px 24px; border-radius: 8px; border: 1.5px solid transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary { background: var(--surface); border-color: var(--border); color: var(--text); }
+  .btn-secondary:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #1647C5; }
+  .btn-success { background: var(--success); border-color: var(--success); color: #fff; }
+  .btn-success:hover:not(:disabled) { background: #065f2f; }
+
+  /* RESULT */
+  #result-screen { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2.5rem 2rem; box-shadow: var(--shadow); text-align: center; }
+  .result-icon { font-size: 48px; margin-bottom: 1rem; }
+  .result-title { font-size: 26px; font-weight: 600; margin-bottom: 0.5rem; }
+  .result-subtitle { font-size: 15px; color: var(--text2); margin-bottom: 2rem; }
+  .result-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 2rem; }
+  @media (max-width: 600px) { .result-stats { grid-template-columns: repeat(2,1fr); } }
+
+  /* STUDENT NAME BANNER on result */
+  .student-banner { background: var(--accent-bg); border: 1px solid var(--accent-border); border-radius: 8px; padding: 12px 16px; margin-bottom: 1.5rem; font-size: 15px; font-weight: 500; color: var(--accent); }
+
+  .dynamo-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; text-align: left; margin-bottom: 1.5rem; }
+  .dynamo-box h3 { font-size: 14px; font-weight: 600; margin-bottom: 0.75rem; color: var(--text); }
+  .dynamo-box pre { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--text2); white-space: pre-wrap; word-break: break-all; line-height: 1.7; max-height: 200px; overflow-y: auto; }
+  .result-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  #api-status { margin-bottom: 1.5rem; font-size: 14px; font-weight: 500; padding: 10px 16px; border-radius: 8px; }
+  #api-status.saving { background: var(--surface2); color: var(--text2); }
+  #api-status.saved { background: var(--success-bg); color: var(--success); border: 1px solid #86EFAC; }
+  #api-status.failed { background: var(--danger-bg); color: var(--danger); border: 1px solid #FCA5A5; }
+  #api-status.no-api { background: var(--warning-bg); color: var(--warning); border: 1px solid #FCD34D; }
+
+  /* TIME UP MODAL */
+  #time-up-modal { display: none; position: fixed; inset: 0; background: rgba(26,31,54,0.55); z-index: 999; align-items: center; justify-content: center; }
+  #time-up-modal.show { display: flex; }
+  .modal-box { background: var(--surface); border-radius: var(--radius); padding: 2rem; max-width: 380px; width: 90%; text-align: center; box-shadow: 0 8px 32px rgba(26,31,54,0.18); }
+  .modal-box h2 { font-size: 20px; margin-bottom: 0.5rem; }
+  .modal-box p { font-size: 14px; color: var(--text2); margin-bottom: 1.5rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+    </div>
+    <span class="logo-text">AWS Mock Test <span>· Cloud Practitioner</span></span>
+  </div>
+  <div id="timer-display" style="display:none">40:00</div>
+  <div class="progress-info" id="header-progress" style="display:none"></div>
+</header>
+
+<div class="container">
+
+  <!-- SPLASH / NAME ENTRY -->
+  <div id="splash-screen">
+    <div class="splash-header">
+      <div class="splash-icon">
+        <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+      </div>
+      <div>
+        <div class="splash-title">AWS Cloud Practitioner</div>
+        <div class="splash-sub">Official-style mock examination</div>
+      </div>
+    </div>
+
+    <div class="splash-info">
+      <div class="stat-card"><div class="stat-value">30</div><div class="stat-label">Questions</div></div>
+      <div class="stat-card"><div class="stat-value">40</div><div class="stat-label">Minutes</div></div>
+      <div class="stat-card"><div class="stat-value">40</div><div class="stat-label">Total Marks</div></div>
+    </div>
+
+    <!-- NAME INPUT -->
+    <div class="name-section">
+      <label for="student-name">Your Full Name</label>
+      <div class="name-input-wrap">
+        <input type="text" id="student-name" placeholder="Enter your name" autocomplete="name" maxlength="80"/>
+      </div>
+      <div class="name-error" id="name-error">Please enter your name before starting.</div>
+    </div>
+
+    <p class="splash-meta">
+      Some questions require selecting multiple answers — these are clearly labeled. Your name, score, and full answer breakdown will be saved to the database on submission.
+    </p>
+    <button class="btn btn-primary" style="width:100%;padding:14px;font-size:15px" onclick="startQuiz()">Begin Exam</button>
+  </div>
+
+  <!-- QUIZ AREA -->
+  <div id="quiz-area" style="display:none">
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+
+    <div class="question-map-toggle">
+      <div class="qm-header" onclick="toggleMap()">
+        <span>📋 Question Navigator</span>
+        <span id="map-toggle-icon">▼ Show</span>
+      </div>
+      <div id="q-map-grid" class="qm-grid qm-hidden"></div>
+    </div>
+
+    <div class="question-card">
+      <div class="q-meta">
+        <span class="q-number" id="q-number-label">Q1 of 30</span>
+        <span class="q-badge" id="q-type-badge">Single answer</span>
+        <span class="q-badge" id="q-marks-badge">1 mark</span>
+      </div>
+      <div class="q-text" id="q-text"></div>
+      <div class="options-list" id="options-list"></div>
+      <div class="feedback-box" id="feedback-box"></div>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-secondary" id="btn-prev" onclick="navigate(-1)" disabled>← Previous</button>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn btn-primary" id="btn-check" onclick="checkAnswer()">Check Answer</button>
+        <button class="btn btn-secondary" id="btn-next" onclick="navigate(1)" disabled>Next →</button>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:1rem">
+      <button id="submit-btn" class="btn btn-success" onclick="submitQuiz()" style="padding:12px 40px;font-size:15px">
+        Submit Exam
+      </button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result-screen">
+    <div class="result-icon" id="result-icon"></div>
+    <div class="result-title" id="result-title"></div>
+    <div class="result-subtitle" id="result-subtitle"></div>
+    <div class="student-banner" id="student-banner"></div>
+
+    <div class="result-stats">
+      <div class="stat-card"><div class="stat-value" id="res-score"></div><div class="stat-label">Score</div></div>
+      <div class="stat-card"><div class="stat-value" id="res-pct"></div><div class="stat-label">Percentage</div></div>
+      <div class="stat-card"><div class="stat-value" id="res-correct" style="color:var(--success)"></div><div class="stat-label">Correct</div></div>
+      <div class="stat-card"><div class="stat-value" id="res-wrong" style="color:var(--danger)"></div><div class="stat-label">Incorrect</div></div>
+    </div>
+
+    <div id="api-status"></div>
+
+  
+
+    <div class="result-actions">
+      <button class="btn btn-primary" onclick="reviewMode()">Review Answers</button>
+      
+    </div>
+  </div>
+
+</div>
+
+<!-- Time Up Modal -->
+<div id="time-up-modal">
+  <div class="modal-box">
+    <div style="font-size:40px;margin-bottom:1rem">⏰</div>
+    <h2>Time's Up!</h2>
+    <p>Your 40 minutes are over. Your answers have been submitted automatically.</p>
+    <button class="btn btn-primary" style="width:100%" onclick="submitQuiz(true)">View Results</button>
+  </div>
+</div>
+
+<script>
+// ── CONFIG — paste your API Gateway URL here ───────────────────────────────
+const QUIZ_API_ENDPOINT = "https://awih5d38hc.execute-api.ap-south-1.amazonaws.com/submit-quiz";
+
+// ── QUIZ DATA ──────────────────────────────────────────────────────────────
+const QUESTIONS = [
+  { order:1, question:"Which scenario is an example of software as a service (SaaS) in cloud computing?", options:["The developer deploys code to the cloud environment maintained by the third-party vendor.","The developer maintains virtual servers, operating systems, and data for more control over resources.","The third-party vendor manages the procurement of resources and the application. The developer is responsible for the application content.","The developer manages the updates, patches, and procurement of resources. The third-party vendor is responsible for only the hardware."], correct:[2], multiple:false, marks:1 },
+  { order:2, question:"Which cloud service model gives the user more control over IT resources, such as networking features, computers, and data storage space?", options:["Software as a service (SaaS)","Infrastructure as a service (IaaS)","Platform as a service (PaaS)","Hybrid model"], correct:[1], multiple:false, marks:1 },
+  { order:3, question:"What are benefits of trading fixed expense for variable expense? (Select TWO.)", options:["Paying for only how much is consumed","Purchasing property and buildings as needed","Paying only when computing resources are consumed","Purchasing physical servers as needed","Being able to invest in data centers based on forecast"], correct:[0,2], multiple:true, marks:2 },
+  { order:4, question:"Which categories of services does AWS provide? (Select TWO.)", options:["Medical","Compute","Financial","Insurance","Storage"], correct:[1,4], multiple:true, marks:2 },
+  { order:5, question:"Which tools can customers use to create and manage resources in the AWS Cloud? (Select THREE.)", options:["AWS Direct Connect","AWS Management Console","AWS CLI","AWS Fargate","AWS software development kits (SDKs)","Amazon Aurora"], correct:[1,2,4], multiple:true, marks:2 },
+  { order:6, question:"Which payment options are available for most Amazon EC2 Reserved Instances? (Select THREE.)", options:["No Upfront payment","Partial Upfront payment","All Upfront payment","Hourly payment","Installment payment","Quarterly payment"], correct:[0,1,2], multiple:true, marks:2 },
+  { order:7, question:"Which component of the AWS global infrastructure does Amazon CloudFront use to ensure low-latency delivery?", options:["AWS Regions","AWS Availability Zones","AWS edge locations","Amazon Virtual Private Cloud (Amazon VPC)"], correct:[2], multiple:false, marks:1 },
+  { order:8, question:"Which categories are fundamental drivers of cost with AWS? (Select THREE.)", options:["Service termination fees","Networking and content delivery","Storage","Hardware purchases","Compute","Data transfer"], correct:[2,4,5], multiple:true, marks:2 },
+  { order:9, question:"What is Amazon CloudFront?", options:["A service that works with third-party providers to deliver content in the end user's local language","A global content delivery network (CDN) that delivers content to end users with reduced latency","A content delivery network (CDN) that delivers content in a single geographical location","A dedicated network that delivers content to end users that are in the same Availability Zone"], correct:[1], multiple:false, marks:1 },
+  { order:10, question:"Which services are in the AWS storage category? (Select TWO.)", options:["Amazon Elastic Container Service (Amazon ECS)","Amazon EC2","AWS Lambda","Amazon Elastic File System (Amazon EFS)","Amazon S3"], correct:[3,4], multiple:true, marks:2 },
+  { order:11, question:"An administrator wants to create new users for their AWS account and assign permissions. Which service should the administrator use?", options:["Amazon Route 53","AWS Organizations","Amazon EC2","AWS Identity and Access Management (IAM)"], correct:[3], multiple:false, marks:1 },
+  { order:12, question:"Which compute service makes it possible for users to create virtual machines in the cloud?", options:["Amazon EC2","AWS Elastic Beanstalk","AWS Batch","AWS Lambda"], correct:[0], multiple:false, marks:1 },
+  { order:13, question:"Which service can customers use to provision a logically isolated section of the AWS Cloud to establish a virtual network?", options:["Amazon Aurora","Amazon Route 53","Amazon Elastic Container Service (Amazon ECS)","Amazon VPC"], correct:[3], multiple:false, marks:1 },
+  { order:14, question:"What is AWS responsible for according to the AWS shared responsibility model?", options:["Security of the cloud","Security outside the cloud","Security in the cloud","Security in and of the cloud"], correct:[0], multiple:false, marks:1 },
+  { order:15, question:"Which task is the customer responsible for according to the AWS shared responsibility model?", options:["Securing the physical building where the servers are running","Applying operating system security updates to the servers that run an AWS managed service","Ensuring that users have entered a user ID and password before they use an application","Isolating the virtual server instances in the infrastructure"], correct:[2], multiple:false, marks:1 },
+  { order:16, question:"What property uniquely identifies an object in an Amazon S3 bucket?", options:["Object value","Object key","Metadata","Version"], correct:[1], multiple:false, marks:1 },
+  { order:17, question:"How many 9s of durability is Amazon S3 designed to provide?", options:["08 9s (99.999999)","11 9s (99.999999999)","4 9s (99.99)","6 9s (99.9999)"], correct:[1], multiple:false, marks:1 },
+  { order:18, question:"A financial company wants the lowest-cost Amazon S3 solution for long-term storage with access only once or twice a year. Which storage class should they choose?", options:["S3 Glacier Deep Archive","S3 One Zone-Infrequent Access (S3 One Zone-IA)","S3 Standard-Infrequent Access (S3 Standard-IA)","S3 Standard"], correct:[0], multiple:false, marks:1 },
+  { order:19, question:"Which statements describe Amazon S3? (Select TWO.)", options:["Bucket names are universal, and they must be unique across all existing bucket names in Amazon S3.","By default, data that is stored in an S3 bucket is public, and this must be turned off to make the data private.","It can be used for static web hosting.","Bucket names are specific to the AWS account, and they must be unique within each AWS account.","It can be used for dynamic web hosting."], correct:[0,2], multiple:true, marks:2 },
+  { order:20, question:"A company needs to run an application that tolerates interruptions on AWS. Which pricing model would best fit their requirements and help lower costs?", options:["Dedicated Instances","On-Demand Instances","Spot Instances","Reserved Instances"], correct:[2], multiple:false, marks:1 },
+  { order:21, question:"Which resource acts as a firewall at the security level?", options:["Network access control list (network ACL)","Security group","Internet gateway","Router"], correct:[0], multiple:false, marks:1 },
+  { order:22, question:"What are the three types of load balancers that Amazon Elastic Load Balancing offers?", options:["Network Load Balancer","Internet Load Balancer","Classic Load Balancer","Scaling Load Balancer","Compute Load Balancer","Application Load Balancer"], correct:[0,2,5], multiple:true, marks:2 },
+  { order:23, question:"A federal contractor is expanding to Germany with strict data sovereignty rules. Which services would be considered global for this customer? (Select THREE.)", options:["Amazon Elastic Compute Cloud (Amazon EC2)","Amazon CloudFront","Amazon Route 53","Amazon Machine Images (AMIs)","AWS Identity and Access Management (IAM)"], correct:[1,2,4], multiple:true, marks:2 },
+  { order:24, question:"A financial company has noticed their website images take a while to load for global customers. What service would be beneficial for reducing the latency on image downloads?", options:["Amazon CloudFront","Amazon Simple Storage Service (Amazon S3)","Amazon Elastic Compute Cloud (Amazon EC2)","Amazon Elastic Block Store (Amazon EBS)"], correct:[0], multiple:false, marks:1 },
+  { order:25, question:"A startup wants to notify customers and restaurants when food delivery is completed. What services could be used to provide notifications? (Select TWO.)", options:["Amazon Lightsail","Amazon Elastic Compute Cloud (Amazon EC2)","AWS Lambda","Amazon Simple Notification Service (Amazon SNS)","Amazon Machine Images (AMIs)"], correct:[2,3], multiple:true, marks:2 },
+  { order:26, question:"When does user data run when you provision an Amazon EC2 instance?", options:["Creation","Initialization","Deployment","Termination"], correct:[1], multiple:false, marks:1 },
+  { order:27, question:"Which services can be used to store session-related information off from an Amazon EC2 instance so that the instance remains stateless? (Select TWO.)", options:["Amazon Simple Storage Service (Amazon S3)","Amazon ElastiCache","Amazon DynamoDB","Amazon Auto Scaling","Amazon Relational Database Service (Amazon RDS)"], correct:[1,2], multiple:true, marks:2 },
+  { order:28, question:"A trucking company wants to minimize dependence on their cloud service provider and only needs compute capacity occasionally. What type of solution would be most ideal?", options:["On-premises","Serverless","Internet of Things (IoT)","Hybrid"], correct:[1], multiple:false, marks:1 },
+  { order:29, question:"What type of Amazon EC2 instance should be used with AWS Lambda for the most economic benefit for a company that only needs compute capacity occasionally?", options:["Reserved","Dedicated","Spot","On-Demand"], correct:[2], multiple:false, marks:1 },
+  { order:30, question:"A FinTech bank wants to graph connected data on customers' financial behaviors. What AWS service should be prioritized for the bank's database?", options:["Amazon ElastiCache","Amazon DynamoDB","Amazon Aurora","Amazon Neptune"], correct:[3], multiple:false, marks:1 },
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let currentQ = 0;
+let userAnswers = QUESTIONS.map(() => []);
+let checked = Array(QUESTIONS.length).fill(false);
+let timerInterval = null;
+let secondsLeft = 40 * 60;
+let quizSubmitted = false;
+let reviewModeActive = false;
+let studentName = "";
+const TOTAL_MARKS = QUESTIONS.reduce((s, q) => s + q.marks, 0);
+
+// ── START ──────────────────────────────────────────────────────────────────
+function startQuiz() {
+  const nameInput = document.getElementById('student-name');
+  const nameErr = document.getElementById('name-error');
+  studentName = nameInput.value.trim();
+
+  if (!studentName) {
+    nameInput.classList.add('error');
+    nameErr.classList.add('show');
+    nameInput.focus();
+    return;
+  }
+  nameInput.classList.remove('error');
+  nameErr.classList.remove('show');
+
+  document.getElementById('splash-screen').style.display = 'none';
+  document.getElementById('quiz-area').style.display = 'block';
+  document.getElementById('header-progress').style.display = 'block';
+  buildMap();
+  renderQuestion();
+  startTimer();
+}
+
+// ── TIMER ──────────────────────────────────────────────────────────────────
+function startTimer() {
+  const el = document.getElementById('timer-display');
+  el.style.display = 'block';
+  timerInterval = setInterval(() => {
+    secondsLeft--;
+    const m = Math.floor(secondsLeft / 60), s = secondsLeft % 60;
+    el.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    el.className = secondsLeft > 600 ? '' : secondsLeft > 120 ? 'warn' : 'crit';
+    if (secondsLeft <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('time-up-modal').classList.add('show');
+    }
+  }, 1000);
+}
+
+// ── QUESTION MAP ───────────────────────────────────────────────────────────
+let mapOpen = false;
+function buildMap() {
+  const grid = document.getElementById('q-map-grid');
+  grid.innerHTML = '';
+  QUESTIONS.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'qm-dot';
+    d.textContent = i + 1;
+    d.id = 'qm-' + i;
+    d.onclick = () => { currentQ = i; renderQuestion(); };
+    grid.appendChild(d);
+  });
+}
+function toggleMap() {
+  mapOpen = !mapOpen;
+  document.getElementById('q-map-grid').classList.toggle('qm-hidden', !mapOpen);
+  document.getElementById('map-toggle-icon').textContent = mapOpen ? '▲ Hide' : '▼ Show';
+}
+function updateMap() {
+  QUESTIONS.forEach((_, i) => {
+    const d = document.getElementById('qm-' + i);
+    if (!d) return;
+    d.className = 'qm-dot';
+    if (i === currentQ) { d.classList.add('current'); return; }
+    if (reviewModeActive && checked[i]) {
+      const q = QUESTIONS[i];
+      const ok = q.correct.slice().sort().join(',') === userAnswers[i].slice().sort().join(',');
+      d.classList.add(ok ? 'correct-dot' : 'incorrect-dot');
+    } else if (userAnswers[i].length > 0) {
+      d.classList.add('answered');
+    }
+  });
+}
+
+// ── RENDER QUESTION ────────────────────────────────────────────────────────
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  document.getElementById('q-number-label').textContent = `Q${currentQ + 1} of ${QUESTIONS.length}`;
+  document.getElementById('q-type-badge').textContent = q.multiple ? `Select ${q.correct.length}` : 'Single answer';
+  document.getElementById('q-marks-badge').textContent = q.marks === 1 ? '1 mark' : `${q.marks} marks`;
+  document.getElementById('q-text').textContent = q.question;
+  document.getElementById('header-progress').textContent = `${userAnswers.filter(a => a.length > 0).length}/${QUESTIONS.length} answered`;
+  document.getElementById('progress-fill').style.width = `${((currentQ + 1) / QUESTIONS.length) * 100}%`;
+
+  const list = document.getElementById('options-list');
+  list.innerHTML = '';
+  const type = q.multiple ? 'checkbox' : 'radio';
+
+  q.options.forEach((opt, idx) => {
+    const label = document.createElement('label');
+    label.className = 'option-label';
+    if (userAnswers[currentQ].includes(idx)) label.classList.add('selected');
+
+    const input = document.createElement('input');
+    input.type = type;
+    input.name = 'q' + currentQ;
+    input.value = idx;
+    input.checked = userAnswers[currentQ].includes(idx);
+    input.addEventListener('change', () => handleSelect(idx, input.checked, type));
+
+    const span = document.createElement('span');
+    span.className = 'option-text';
+    span.textContent = opt;
+
+    const ind = document.createElement('span');
+    ind.className = 'option-indicator';
+
+    label.appendChild(input);
+    label.appendChild(span);
+    label.appendChild(ind);
+    list.appendChild(label);
+  });
+
+  const fb = document.getElementById('feedback-box');
+  fb.className = 'feedback-box';
+  fb.textContent = '';
+
+  if (checked[currentQ] || reviewModeActive) {
+    showReview();
+  } else if (quizSubmitted) {
+    lockInputs();
+  }
+
+  document.getElementById('btn-prev').disabled = currentQ === 0;
+  document.getElementById('btn-next').disabled = currentQ === QUESTIONS.length - 1;
+  document.getElementById('btn-check').style.display = (checked[currentQ] || quizSubmitted) ? 'none' : 'inline-block';
+  updateMap();
+}
+
+function handleSelect(idx, isChecked, type) {
+  if (checked[currentQ]) return;
+  if (type === 'radio') {
+    userAnswers[currentQ] = [idx];
+  } else {
+    if (isChecked) { if (!userAnswers[currentQ].includes(idx)) userAnswers[currentQ].push(idx); }
+    else { userAnswers[currentQ] = userAnswers[currentQ].filter(x => x !== idx); }
+  }
+  document.querySelectorAll('#options-list .option-label').forEach((lbl, i) => {
+    lbl.classList.toggle('selected', userAnswers[currentQ].includes(i));
+  });
+  updateMap();
+}
+
+function lockInputs() {
+  document.querySelectorAll('#options-list input').forEach(inp => inp.disabled = true);
+}
+
+function checkAnswer() {
+  if (userAnswers[currentQ].length === 0) { alert('Please select an answer first.'); return; }
+  checked[currentQ] = true;
+  showReview();
+  document.getElementById('btn-check').style.display = 'none';
+}
+
+function showReview() {
+  const q = QUESTIONS[currentQ];
+  const ua = userAnswers[currentQ];
+  const correctSet = new Set(q.correct);
+  const givenSet = new Set(ua);
+  const isFullyCorrect = q.correct.every(c => givenSet.has(c)) && ua.every(c => correctSet.has(c));
+
+  document.querySelectorAll('#options-list .option-label').forEach((lbl, idx) => {
+    lbl.classList.remove('selected', 'correct', 'incorrect', 'missed');
+    const ind = lbl.querySelector('.option-indicator');
+    ind.textContent = '';
+    lbl.querySelector('input').disabled = true;
+    const wasChosen = givenSet.has(idx), isCorrect = correctSet.has(idx);
+    if (wasChosen && isCorrect) { lbl.classList.add('correct'); ind.textContent = '✓ Correct'; }
+    else if (wasChosen && !isCorrect) { lbl.classList.add('incorrect'); ind.textContent = '✗ Wrong'; }
+    else if (!wasChosen && isCorrect) { lbl.classList.add('missed'); ind.textContent = '→ Correct answer'; }
+  });
+
+  const fb = document.getElementById('feedback-box');
+  fb.classList.add('show');
+  if (isFullyCorrect) {
+    fb.className = 'feedback-box show ok';
+    fb.textContent = `✓ Correct! +${q.marks} mark${q.marks > 1 ? 's' : ''}`;
+  } else {
+    fb.className = 'feedback-box show ko';
+    fb.textContent = '✗ Incorrect. Review the highlighted answers above.';
+  }
+  updateMap();
+}
+
+function navigate(dir) {
+  currentQ = Math.max(0, Math.min(QUESTIONS.length - 1, currentQ + dir));
+  renderQuestion();
+}
+
+// ── SUBMIT ─────────────────────────────────────────────────────────────────
+function submitQuiz(forced = false) {
+    if (quizSubmitted) {
+      alert("You have already submitted the quiz.");
+      return;
+  }
+  if (!forced) {
+    const unanswered = userAnswers.filter(a => a.length === 0).length;
+    if (unanswered > 0 && !confirm(`You have ${unanswered} unanswered question(s). Submit anyway?`)) return;
+  }
+  clearInterval(timerInterval);
+  document.getElementById('time-up-modal').classList.remove('show');
+  quizSubmitted = true;
+  // 🔒 Disable submit button immediately
+  const submitBtn = document.getElementById('submit-btn');
+  if (submitBtn) submitBtn.disabled = true;
+  checked = checked.map(() => true);
+
+  // Calculate score
+  let score = 0, correct = 0, wrong = 0;
+  QUESTIONS.forEach((q, i) => {
+    const ua = userAnswers[i];
+    const givenSet = new Set(ua);
+    const isOk = q.correct.every(c => givenSet.has(c)) && ua.every(c => new Set(q.correct).has(c));
+    if (isOk) { score += q.marks; correct++; }
+    else if (ua.length > 0) wrong++;
+  });
+
+  const pct = Math.round((score / TOTAL_MARKS) * 100);
+  const timeTaken = 40 * 60 - secondsLeft;
+  const timeStr = `${String(Math.floor(timeTaken / 60)).padStart(2, '0')}:${String(timeTaken % 60).padStart(2, '0')}`;
+  const submittedAt = new Date().toISOString();
+
+  // Build payload — student_name is the partition key, submitted_at is sort key
+  const payload = {
+    student_name: studentName,
+    submitted_at: submittedAt,
+    quiz_id: "aws_mock_1",
+    time_taken: timeStr,
+    score,
+    total_marks: TOTAL_MARKS,
+    percentage: pct,
+    correct_count: correct,
+    wrong_count: wrong,
+    unanswered_count: QUESTIONS.length - correct - wrong,
+    answers: QUESTIONS.map((q, i) => ({
+      question_order: q.order,
+      question: q.question,
+      selected: userAnswers[i].map(idx => q.options[idx]),
+      correct_answers: q.correct.map(idx => q.options[idx]),
+      marks_obtained: (() => {
+        const ua = userAnswers[i];
+        const isOk = q.correct.every(c => new Set(ua).has(c)) && ua.every(c => new Set(q.correct).has(c));
+        return isOk ? q.marks : 0;
+      })()
+    }))
+  };
+
+  // Switch to result screen
+  document.getElementById('quiz-area').style.display = 'none';
+  document.getElementById('timer-display').style.display = 'none';
+  document.getElementById('header-progress').style.display = 'none';
+  document.getElementById('result-screen').style.display = 'block';
+
+  const passed = pct >= 70;
+  document.getElementById('result-icon').textContent = passed ? '🏆' : '📚';
+  document.getElementById('result-title').textContent = passed ? 'Congratulations!' : 'Keep Practicing';
+  document.getElementById('result-subtitle').textContent = passed
+    ? `You scored ${pct}% — great work on the AWS Cloud Practitioner mock!`
+    : `You scored ${pct}%. You need 70% to pass.`;
+  document.getElementById('student-banner').textContent = `👤 Result for: ${studentName}`;
+  document.getElementById('res-score').textContent = `${score}/${TOTAL_MARKS}`;
+  document.getElementById('res-pct').textContent = pct + '%';
+  document.getElementById('res-correct').textContent = correct;
+  document.getElementById('res-wrong').textContent = wrong;
+
+
+  // Send to API
+  const statusEl = document.getElementById('api-status');
+  statusEl.className = 'saving';
+  statusEl.textContent = '⏳ Saving your result to the database…';
+
+  fetch(QUIZ_API_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(async r => {
+    const text = await r.text();
+    console.log('API response:', r.status, text);
+    if (r.ok) {
+      statusEl.className = 'saved';
+      statusEl.textContent = `✅ Result for "${studentName}" saved successfully.`;
+    } else {
+      statusEl.className = 'failed';
+      statusEl.textContent = `⚠️ API returned ${r.status}: ${text}. Check Lambda logs.`;
+    }
+  })
+  .catch(err => {
+    console.error('Fetch error:', err);
+    statusEl.className = 'failed';
+    statusEl.textContent = `❌ Could not reach the API: ${err.message}. Check CORS settings.`;
+  });
+}
+
+function reviewMode() {
+  reviewModeActive = true;
+  currentQ = 0;
+  // 🔒 Hide submit button completely in review
+  const submitBtn = document.getElementById('submit-btn');
+  if (submitBtn) submitBtn.style.display = 'none';
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('quiz-area').style.display = 'block';
+  document.getElementById('header-progress').style.display = 'block';
+  renderQuestion();
+}
+</script>
+</body>
+</html>
