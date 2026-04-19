@@ -1,0 +1,54 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "PublicReadGetObject",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::mock1-quiz-app/*"
+        },
+        {
+            "Sid": "AllowAmplifyToListPrefix_d1dg21frxistry_staging_",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "amplify.amazonaws.com"
+            },
+            "Action": "s3:ListBucket",
+            "Resource": "arn:aws:s3:::mock1-quiz-app",
+            "Condition": {
+                "StringEquals": {
+                    "aws:SourceAccount": "147845228828",
+                    "s3:prefix": "",
+                    "aws:SourceArn": "arn%3Aaws%3Aamplify%3Aap-south-1%3A147845228828%3Aapps%2Fd1dg21frxistry%2Fbranches%2Fstaging"
+                }
+            }
+        },
+        {
+            "Sid": "AllowAmplifyToReadPrefix_d1dg21frxistry_staging_",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "amplify.amazonaws.com"
+            },
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::mock1-quiz-app/*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:SourceAccount": "147845228828",
+                    "aws:SourceArn": "arn%3Aaws%3Aamplify%3Aap-south-1%3A147845228828%3Aapps%2Fd1dg21frxistry%2Fbranches%2Fstaging"
+                }
+            }
+        },
+        {
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:*",
+            "Resource": "arn:aws:s3:::mock1-quiz-app/*",
+            "Condition": {
+                "Bool": {
+                    "aws:SecureTransport": "false"
+                }
+            }
+        }
+    ]
+}
